@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIBA Tracker</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --site-primary: #245B4A;
+  --site-on-primary: #FFFFFF;
+  --site-secondary: #E3EEE8;
+  --site-on-secondary: #183D32;
+  --site-background: #F5F7F4;
+  --site-on-background: #1D2C27;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#FFFFFF, #1B2421);
+  --surface-soft: light-dark(#F0F5F1, #222F2A);
+  --line: light-dark(#DCE5DF, #35433D);
+  --muted: light-dark(#64746C, #A6B5AD);
+  --good: #2F7B57;
+  --warn: #A66B20;
+  --bad: #A34444;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+.shell { display: grid; grid-template-columns: 238px minmax(0,1fr); min-height: 100vh; }
+.sidebar { background: var(--site-primary); color: var(--site-on-primary); padding: calc(24px * var(--site-spacing-scale)) 16px; display:flex; flex-direction:column; gap:24px; }
+.brand { display:flex; align-items:center; gap:11px; padding: 0 8px; }
+.brand-mark { width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:23px; }
+.brand strong { display:block; letter-spacing:.02em; font-size:16px; }
+.brand small { opacity:.75; font-size:11px; }
+.nav-label { color:rgba(255,255,255,.58); text-transform:uppercase; font-size:10px; letter-spacing:.13em; padding:0 12px; margin-bottom:8px; }
+.nav { display:flex; flex-direction:column; gap:5px; }
+.nav button { border:0; background:transparent; color:rgba(255,255,255,.82); border-radius:12px; padding:12px; text-align:left; display:flex; gap:12px; align-items:center; font-size:13px; }
+.nav button.active,.nav button:hover { background:rgba(255,255,255,.15); color:white; }
+.nav-icon { width:20px; text-align:center; font-size:17px; }
+.side-note { margin-top:auto; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); padding:14px; border-radius:14px; font-size:12px; line-height:1.5; }
+.side-note strong { display:block; margin-bottom:5px; }
+main { min-width:0; }
+.topbar { display:flex; justify-content:space-between; align-items:center; padding:20px clamp(18px,3vw,38px); border-bottom:1px solid var(--line); background:var(--surface); gap:16px; }
+.crumb { font-size:12px; color:var(--muted); }
+.top-right { display:flex; align-items:center; gap:12px; }
+.demo-pill { font-size:11px; color:var(--warn); background:light-dark(#FFF3DD,#47351D); padding:7px 10px; border-radius:999px; }
+.avatar { width:35px;height:35px;border-radius:50%;background:var(--site-secondary);color:var(--site-on-secondary);display:grid;place-items:center;font-weight:750;font-size:12px; }
+.content { padding: clamp(18px,3vw,38px); max-width:1500px; margin:auto; }
+.page-head { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:26px; flex-wrap:wrap; }
+h1 { font-family:var(--site-font-heading); font-size:calc(30px * var(--site-heading-scale)); letter-spacing:-.04em; margin:0 0 7px; }
+h2 { font-size:calc(17px * var(--site-heading-scale)); letter-spacing:-.02em; margin:0; }
+.subtitle { color:var(--muted); margin:0; font-size:13px; line-height:1.5; }
+.btn { border:1px solid var(--line); background:var(--surface); color:var(--site-on-background); padding:10px 14px; border-radius:11px; font-size:12px; font-weight:650; }
+.btn.primary { background:var(--site-primary); border-color:var(--site-primary); color:var(--site-on-primary); }
+.btn:hover { filter:brightness(.97); }
+.btn-row { display:flex; gap:8px; flex-wrap:wrap; }
+.stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:calc(18px * var(--site-radius-scale)); padding:19px; min-width:0; }
+.stat-top { display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; gap:8px; }
+.stat-icon { width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--surface-soft);font-size:17px; }
+.stat-num { font-size:29px; font-weight:750; letter-spacing:-.04em; margin:14px 0 3px; }
+.stat-foot { font-size:11px; color:var(--muted); }
+.grid-main { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr); gap:16px; margin-bottom:18px; }
+.card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.card-head p { margin:5px 0 0; color:var(--muted); font-size:11px; }
+.legend { display:flex; gap:12px; color:var(--muted); font-size:11px; }
+.dot { display:inline-block;width:7px;height:7px;border-radius:50%;background:#4D9272;margin-right:5px; }
+.chart-wrap { width:100%; overflow:hidden; }
+.chart-wrap svg { width:100%; height:auto; display:block; }
+.chart-label { fill:var(--muted); font-size:10px; }
+.pupil-list { display:flex; flex-direction:column; gap:14px; }
+.pupil { display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:10px; align-items:center; }
+.pupil-initial { width:36px;height:36px;border-radius:12px;background:var(--site-secondary);color:var(--site-on-secondary);display:grid;place-items:center;font-size:11px;font-weight:750; }
+.pupil-name { font-size:12px;font-weight:700; }
+.pupil-meta { font-size:10px;color:var(--muted);margin-top:3px; }
+.pct { font-size:12px;font-weight:750; }
+.progress { height:6px;background:var(--surface-soft);border-radius:999px;overflow:hidden;margin-top:8px; }
+.progress span { display:block;height:100%;background:#4D9272;border-radius:999px; }
+.table-card { padding:0; overflow:hidden; }
+.table-top { padding:19px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.table-scroll { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:12px; white-space:nowrap; }
+th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); background:var(--surface-soft); padding:12px 19px; }
+td { padding:14px 19px; border-top:1px solid var(--line); }
+.status { display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:5px 8px; font-size:10px; background:light-dark(#E4F4EA,#203E2D); color:light-dark(#246642,#A4D9B6); }
+.status.pending { background:light-dark(#FFF1D8,#43351F); color:light-dark(#8D5B15,#E9C17D); }
+.form-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px; }
+.field { display:flex;flex-direction:column;gap:7px; }
+.field label { font-size:12px;font-weight:700; }
+.field input,.field select,.field textarea { width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 12px; color:var(--site-on-background); background:var(--surface); font-size:13px; }
+.field textarea { min-height:82px;resize:vertical; }
+.field input[type="file"] { padding:9px; }
+.photo-preview { display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:11px; }
+.photo-preview img { max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;border:1px solid var(--line); }
+.full { grid-column:1/-1; }
+.form-note { padding:12px;border-radius:11px;background:var(--surface-soft);font-size:11px;color:var(--muted);line-height:1.5; }
+.hidden { display:none !important; }
+.empty { padding:35px 15px;text-align:center;color:var(--muted);font-size:13px; }
+.report-header { display:none; }
+.toast { position:fixed;bottom:20px;right:20px;background:var(--site-primary);color:white;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:0 8px 24px #0002;z-index:10; }
+@media (max-width:1000px) { .stats{grid-template-columns:repeat(2,minmax(0,1fr));}.grid-main{grid-template-columns:1fr;} }
+@media (max-width:680px) { .shell{grid-template-columns:1fr}.sidebar{padding:12px;gap:12px}.brand{padding:4px}.nav-label,.side-note{display:none}.nav{flex-direction:row;overflow-x:auto}.nav button{white-space:nowrap;padding:10px}.nav-icon{display:none}.topbar{padding:14px 18px}.content{padding:18px}.stats{gap:9px}.card{padding:15px}.stat-num{font-size:24px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.page-head h1{font-size:26px} }
+@media print { body,#app{background:white!important;color:#111!important}.sidebar,.topbar,.no-print,.btn,.demo-pill{display:none!important}.shell{display:block}.content{padding:0;max-width:none}.card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;background:white!important;color:#111!important}.report-header{display:block;margin-bottom:18px}.table-card{overflow:visible}table{white-space:normal}th,td{padding:8px;color:#111!important;background:white!important}.grid-main{grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(4,1fr)} }
+
+.auth-wrap { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:var(--site-background); }
+.auth-card { width:min(100%,460px); background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:0 18px 60px #0002; }
+.auth-card h2 { margin-bottom:8px; font-size:22px; }
+.auth-card p { color:var(--muted); font-size:13px; line-height:1.5; }
+.auth-card .field { margin:14px 0; }
+.auth-message { color:var(--bad); font-size:12px; min-height:18px; }
+.auth-small { font-size:11px!important; }
+</style>
+</head>
+<body>
+<div id="app">
+<div class="shell">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">📖</div><div><strong>PIBA TRACKER</strong><small>Sistem Bimbingan Membaca</small></div></div>
+  <div><div class="nav-label">Menu utama</div><nav class="nav">
+    <button class="active" data-view="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+    <button data-view="record"><span class="nav-icon">＋</span>Rekod bacaan</button>
+    <button data-view="history"><span class="nav-icon">◷</span>Sejarah rekod</button>
+    <button data-view="pupils"><span class="nav-icon">♧</span>Senarai murid</button>
+    <button data-view="report"><span class="nav-icon">▤</span>Laporan</button>
+  </nav></div>
+  <div class="side-note"><strong>🌱 Fokus PIBA</strong>Rekod secara konsisten, bimbing mengikut keperluan murid dan pantau perkembangan bacaan.</div>
+</aside>
+<main>
+  <header class="topbar"><div><div class="crumb">SK Sungai Kapit / <span id="crumbText">Dashboard</span></div></div><div class="top-right"><span class="demo-pill" id="connectionStatus">Belum log masuk</span><button class="btn" id="logoutBtn" type="button">Log keluar</button></div></header>
+  <div class="content">
+    <section id="view-dashboard" class="view">
+      <div class="page-head"><div><h1>Selamat datang 👋</h1><p class="subtitle">Pantau perkembangan bacaan murid PIBA dalam satu tempat.</p></div><button class="btn primary" onclick="showView('record')">＋ Rekod bacaan baharu</button></div>
+      <div class="stats">
+        <div class="card"><div class="stat-top">Murid berdaftar <span class="stat-icon">♧</span></div><div class="stat-num" id="statPupils">5</div><div class="stat-foot">Murid dalam senarai PIBA</div></div>
+        <div class="card"><div class="stat-top">Rekod sesi <span class="stat-icon">▤</span></div><div class="stat-num" id="statRecords">0</div><div class="stat-foot">Jumlah rekod tersimpan dalam pangkalan data</div></div>
+        <div class="card"><div class="stat-top">Konstruk dinilai <span class="stat-icon">◎</span></div><div class="stat-num" id="statConstructs">0/12</div><div class="stat-foot">Konstruk berbeza direkodkan</div></div>
+        <div class="card"><div class="stat-top">Rekod bulan ini <span class="stat-icon">▦</span></div><div class="stat-num" id="statMonth">0</div><div class="stat-foot">Sesi yang direkodkan bulan ini</div></div>
+      </div>
+      <div class="grid-main">
+        <div class="card"><div class="card-head"><div><h2>Trend rekod bimbingan</h2><p>Bilangan rekod mengikut bulan</p></div><div class="legend"><span><i class="dot"></i>Rekod</span></div></div><div class="chart-wrap" id="trendChart"></div></div>
+        <div class="card"><div class="card-head"><div><h2>Ringkasan murid</h2><p>Bilangan sesi direkodkan bagi setiap murid</p></div></div><div class="pupil-list" id="pupilProgress"></div></div>
+      </div>
+      <div class="card table-card"><div class="table-top"><div><h2>Rekod terkini</h2><p class="subtitle" style="margin-top:5px">Lima rekod terakhir yang dimasukkan</p></div><button class="btn" onclick="showView('history')">Lihat semua →</button></div><div id="recentTable"></div></div>
+    </section>
+    <section id="view-record" class="view hidden">
+      <div class="page-head"><div><h1>Rekod bimbingan bacaan</h1><p class="subtitle">Masukkan keputusan sesi murid dan tindakan susulan.</p></div></div>
+      <div class="card"><form id="recordForm"><div class="form-grid">
+        <div class="field"><label for="date">Tarikh sesi *</label><input id="date" type="date" required></div>
+        <div class="field"><label for="mentor">Nama guru mentor *</label><input id="mentor" placeholder="Contoh: Cikgu Aina" required></div>
+        <div class="field"><label for="pupil">Nama murid *</label><select id="pupil" required></select></div>
+        <div class="field"><label for="construct">Konstruk LINUS *</label><select id="construct" required></select></div>
+        <div class="field"><label for="before">Tahap sebelum bimbingan *</label><select id="before" required><option value="">Pilih keputusan</option><option>Belum menguasai</option><option>Dalam bimbingan</option><option>Menguasai</option></select></div>
+        <div class="field"><label for="after">Tahap selepas bimbingan *</label><select id="after" required><option value="">Pilih keputusan</option><option>Belum menguasai</option><option>Dalam bimbingan</option><option>Menguasai</option></select></div>
+        <div class="field full"><label for="activity">Pilih aktiviti bimbingan *</label><select id="activity" required><option value="">Pilih aktiviti</option><option>Bacaan Modul Mari Membaca</option><option>Latihan</option><option>Bacaan berpandu</option><option>Bacaan berulang</option><option>Kad huruf / suku kata / perkataan</option><option>Latihan lembaran kerja</option><option>Permainan bahasa</option><option>Bacaan individu</option><option>Suai padan gambar dan perkataan</option><option>Lain-lain</option></select></div>
+        <div class="field full hidden" id="modulePageField"><label for="modulePage">Muka surat Modul Mari Membaca</label><input id="modulePage" type="number" min="1" placeholder="Contoh: 12"></div>
+        <div class="field full hidden" id="exerciseField"><label for="exerciseDetails">Latihan yang diberikan</label><textarea id="exerciseDetails" placeholder="Nyatakan latihan atau tugasan yang murid buat."></textarea></div>
+        <div class="field full hidden" id="otherActivityField"><label for="otherActivity">Nyatakan aktiviti lain</label><input id="otherActivity" placeholder="Masukkan nama aktiviti"></div>
+        <div class="field full"><label for="documentation">Upload gambar dokumentasi sesi (pilihan)</label><input id="documentation" type="file" accept="image/*"><div class="photo-preview" id="photoPreview">Tekan untuk pilih gambar aktiviti atau hasil kerja murid. Format gambar seperti JPG atau PNG.</div></div>
+        <div class="field full"><label for="notes">Catatan pemerhatian</label><textarea id="notes" placeholder="Catat kesilapan, respons murid atau perkara yang perlu diberi perhatian."></textarea></div>
+        <div class="field full"><label for="followup">Tindakan susulan</label><textarea id="followup" placeholder="Contoh: ulang latihan konstruk yang sama pada sesi seterusnya."></textarea></div>
+        <div class="form-note full">Nota: nama konstruk di bawah ialah label kerja untuk prototaip. Sahkan nama dan indikator sebenar dengan halaman Modul Mari Membaca LINUS sebelum digunakan sebagai rekod rasmi.</div>
+        <div class="btn-row full"><button class="btn primary" type="submit">Simpan rekod</button><button class="btn" type="reset">Kosongkan borang</button></div>
+      </div></form></div>
+    </section>
+    <section id="view-history" class="view hidden">
+      <div class="page-head"><div><h1>Sejarah rekod</h1><p class="subtitle">Tapis rekod mengikut murid, tarikh atau guru mentor.</p></div><button class="btn" onclick="window.print()">⎙ Cetak sejarah</button></div>
+      <div class="card" style="margin-bottom:16px"><div class="form-grid"><div class="field"><label for="filterPupil">Murid</label><select id="filterPupil"><option value="">Semua murid</option></select></div><div class="field"><label for="filterMentor">Guru mentor</label><input id="filterMentor" placeholder="Nama guru"></div><div class="field"><label for="filterFrom">Dari tarikh</label><input id="filterFrom" type="date"></div><div class="field"><label for="filterTo">Hingga tarikh</label><input id="filterTo" type="date"></div><div class="btn-row full"><button class="btn primary" onclick="renderHistory()">Tapis rekod</button><button class="btn" onclick="clearFilters()">Set semula</button></div></div></div>
+      <div class="card table-card"><div id="historyTable"></div></div>
+    </section>
+    <section id="view-pupils" class="view hidden">
+      <div class="page-head"><div><h1>Senarai murid PIBA</h1><p class="subtitle">Senarai awal murid yang akan direkodkan dalam sistem.</p></div></div>
+      <div class="card"><div class="form-grid"><div class="field"><label for="newPupil">Nama murid baharu</label><input id="newPupil" placeholder="Masukkan nama murid"></div><div class="field" style="justify-content:end"><button class="btn primary" onclick="addPupil()" type="button">＋ Tambah murid</button></div></div><div style="height:16px"></div><div id="pupilsTable"></div></div>
+    </section>
+    <section id="view-report" class="view hidden">
+      <div class="page-head"><div><h1>Laporan kemajuan PIBA</h1><p class="subtitle">Pilih murid untuk melihat ringkasan rekod dan cetak sebagai PDF.</p></div><button class="btn primary" onclick="window.print()">⎙ Cetak / Simpan PDF</button></div>
+      <div class="card" style="margin-bottom:16px"><div class="form-grid"><div class="field"><label for="reportPupil">Pilih murid</label><select id="reportPupil"></select></div><div class="field"><label for="reportYear">Tahun</label><select id="reportYear"><option>2026</option><option>2027</option><option>2025</option></select></div><div class="btn-row full"><button class="btn primary" onclick="renderReport()">Jana laporan</button></div></div></div>
+      <div id="reportOutput"></div>
+    </section>
+  </div>
+</main>
+</div>
+<div id="toast" class="toast hidden" role="status"></div>
+<div class="auth-wrap" id="authWrap"><div class="auth-card">
+  <div class="brand-mark" style="background:var(--site-secondary);color:var(--site-on-secondary);margin-bottom:14px">📖</div>
+  <h2>PIBA Tracker</h2><p id="authIntro">Sambungkan projek Supabase kamu untuk mula menggunakan sistem.</p>
+  <div id="configFields">
+    <div class="field"><label for="supabaseUrl">Project URL Supabase</label><input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co" autocomplete="url"></div>
+    <div class="field"><label for="supabaseKey">Publishable key</label><input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off"></div>
+    <button class="btn primary" id="connectBtn" type="button">Sambungkan Supabase</button>
+    <p class="auth-small">Gunakan Project URL dan publishable key sahaja. Jangan masukkan service_role atau secret key.</p>
+  </div>
+  <div id="loginFields" class="hidden">
+    <div class="field"><label for="loginEmail">E-mel mentor</label><input id="loginEmail" type="email" autocomplete="username" placeholder="E-mel yang didaftarkan"></div>
+    <div class="field"><label for="loginPassword">Kata laluan</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Kata laluan"></div>
+    <button class="btn primary" id="loginBtn" type="button">Log masuk</button>
+    <button class="btn" id="changeConfigBtn" type="button">Tukar tetapan Supabase</button>
+  </div>
+  <div class="auth-message" id="authMessage" role="status"></div>
+</div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const constructs = [
+ ['K1','Huruf vokal dan konsonan'],['K2','Suku kata terbuka'],['K3','Perkataan suku kata terbuka'],['K4','Suku kata tertutup'],['K5','Perkataan suku kata tertutup'],['K6','Perkataan yang mengandungi ng'],['K7','Perkataan yang mengandungi diftong'],['K8','Perkataan yang mengandungi vokal berganding'],['K9','Digraf dan konsonan gabungan'],['K10','Perkataan berimbuhan'],['K11','Ayat mudah'],['K12','Memahami ayat berdasarkan bahan rangsangan']
+];
+let pupils = [];
+let records = [];
+let supabaseClient = null;
+let currentUser = null;
+let activeView = 'dashboard';
+const $ = id => document.getElementById(id);
+function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function populateSelects(){
+ const opts=pupils.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+ $('pupil').innerHTML='<option value="">Pilih murid</option>'+opts;
+ $('filterPupil').innerHTML='<option value="">Semua murid</option>'+opts;
+ $('reportPupil').innerHTML=opts;
+ $('construct').innerHTML='<option value="">Pilih konstruk</option>'+constructs.map(([id,n])=>`<option value="${id}">${id} — ${escapeHTML(n)}</option>`).join('');
+}
+function showView(name){activeView=name;document.querySelectorAll('.view').forEach(el=>el.classList.add('hidden'));$('view-'+name).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('crumbText').textContent=({dashboard:'Dashboard',record:'Rekod bacaan',history:'Sejarah rekod',pupils:'Senarai murid',report:'Laporan'})[name];if(name==='history')renderHistory();if(name==='pupils')renderPupils();if(name==='report')renderReport();window.scrollTo({top:0,behavior:'smooth'});}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+function showToast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2600);}
+function dateText(d){if(!d)return '—';const [y,m,day]=d.split('-');return `${day}/${m}/${y}`;}
+function statusLabel(s){let cls=s==='Menguasai'?'':'pending';return `<span class="status ${cls}">${escapeHTML(s||'—')}</span>`;}
+function tableHTML(rows){if(!rows.length)return '<div class="empty">Belum ada rekod. Pilih “Rekod bacaan” untuk mula memasukkan data.</div>';return `<div class="table-scroll"><table><thead><tr><th>Tarikh</th><th>Murid</th><th>Konstruk</th><th>Sebelum</th><th>Selepas</th><th>Aktiviti / dokumentasi</th><th>Guru mentor</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${dateText(r.date)}</td><td><strong>${escapeHTML(r.pupil_name||r.pupil||'—')}</strong></td><td>${escapeHTML(r.construct)}</td><td>${statusLabel(r.before)}</td><td>${statusLabel(r.after)}</td><td>${escapeHTML(r.activity||'—')}${r.modulePage?`<br><small>Muka surat: ${escapeHTML(r.modulePage)}</small>`:''}${r.exerciseDetails?`<br><small>Latihan: ${escapeHTML(r.exerciseDetails)}</small>`:''}${r.otherActivity?`<br><small>${escapeHTML(r.otherActivity)}</small>`:''}${r.documentation?`<br><a href="${r.documentation}" target="_blank" rel="noopener">Lihat gambar</a>`:''}</td><td>${escapeHTML(r.mentor)}</td></tr>`).join('')}</tbody></table></div>`;}
+function countFor(p){return records.filter(r=>Number(r.pupil_id)===Number(p.id)).length;}
+function renderChart(){let months=[];let now=new Date();for(let i=5;i>=0;i--){let d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({label:d.toLocaleDateString('ms-MY',{month:'short'}),year:d.getFullYear(),month:d.getMonth(),count:0});}records.forEach(r=>{let d=new Date(r.date+'T12:00:00');let m=months.find(x=>x.year===d.getFullYear()&&x.month===d.getMonth());if(m)m.count++;});let max=Math.max(4,...months.map(m=>m.count));let w=500,h=205,left=34,right=12,top=14,bottom=30,plotH=h-top-bottom,plotW=w-left-right;let bars=months.map((m,i)=>{let x=left+i*(plotW/months.length)+8,bw=plotW/months.length-16,bh=m.count/max*plotH,y=top+plotH-bh;return `<rect x="${x}" y="${y}" width="${Math.max(10,bw)}" height="${Math.max(2,bh)}" rx="5" fill="#4D9272" opacity=".9"/><text x="${x+bw/2}" y="${Math.max(11,y-5)}" text-anchor="middle" class="chart-label">${m.count||''}</text><text x="${x+bw/2}" y="${h-9}" text-anchor="middle" class="chart-label">${m.label}</text>`;}).join('');let grid=[0,1,2,3].map(i=>{let y=top+i*plotH/3;return `<line x1="${left}" y1="${y}" x2="${w-right}" y2="${y}" stroke="var(--line)" stroke-dasharray="3 4"/><text x="${left-9}" y="${y+4}" text-anchor="end" class="chart-label">${Math.round(max*(1-i/3))}</text>`}).join('');$('trendChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Carta bilangan rekod mengikut bulan">${grid}${bars}</svg>`;}
+function renderDashboard(){ $('statPupils').textContent=pupils.length;$('statRecords').textContent=records.length;$('statConstructs').textContent=new Set(records.map(r=>r.construct)).size+'/12';let now=new Date();$('statMonth').textContent=records.filter(r=>{let d=new Date(r.date+'T12:00:00');return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).length;renderChart();$('pupilProgress').innerHTML=pupils.map(p=>{let n=countFor(p),pct=Math.min(100,n*12);return `<div><div class="pupil"><div class="pupil-initial">${escapeHTML(p.name.slice(0,2).toUpperCase())}</div><div><div class="pupil-name">${escapeHTML(p.name)}</div><div class="pupil-meta">${n} rekod bimbingan</div><div class="progress"><span style="width:${pct}%"></span></div></div><div class="pct">${n}</div></div>`}).join('');$('recentTable').innerHTML=tableHTML([...records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5));}
+
+$('recordForm').addEventListener('submit', async e=>{
+ e.preventDefault();
+ if(!supabaseClient || !currentUser) return showToast('Sila log masuk dahulu.');
+ const file=$('documentation').files[0];
+ let photoPath=null;
+ try {
+   if(file){
+     if(!file.type.startsWith('image/')) throw new Error('Sila pilih fail gambar yang sah.');
+     if(file.size>8*1024*1024) throw new Error('Saiz gambar maksimum ialah 8 MB.');
+     const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+     photoPath=`${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+     const up=await supabaseClient.storage.from('piba-dokumentasi').upload(photoPath,file,{upsert:false,contentType:file.type});
+     if(up.error) throw up.error;
+   }
+   const payload={session_date:$('date').value,mentor_name:$('mentor').value.trim(),mentor_id:currentUser.id,pupil_id:Number($('pupil').value),construct_code:$('construct').value,before_status:$('before').value,after_status:$('after').value,activity:$('activity').value,module_page:$('modulePage').value?Number($('modulePage').value):null,exercise_details:$('exerciseDetails').value.trim()||null,other_activity:$('otherActivity').value.trim()||null,photo_path:photoPath,notes:$('notes').value.trim()||null,follow_up:$('followup').value.trim()||null};
+   const result=await supabaseClient.from('reading_records').insert(payload);
+   if(result.error) throw result.error;
+   $('recordForm').reset();['modulePageField','exerciseField','otherActivityField'].forEach(id=>$(id).classList.add('hidden'));$('photoPreview').textContent='Pilih gambar jika ada (JPG, PNG atau gambar telefon).';$('date').value=new Date().toISOString().slice(0,10);
+   await refreshData(); showToast('Rekod berjaya disimpan.'); showView('dashboard');
+ } catch(err){ if(photoPath) await supabaseClient.storage.from('piba-dokumentasi').remove([photoPath]); showToast('Gagal simpan: '+(err.message||'Semak sambungan dan kebenaran Supabase.')); }
+});
+function updateActivityFields(){const v=$('activity').value;$('modulePageField').classList.toggle('hidden',v!=='Bacaan Modul Mari Membaca');$('exerciseField').classList.toggle('hidden',v!=='Latihan');$('otherActivityField').classList.toggle('hidden',v!=='Lain-lain');$('modulePage').required=v==='Bacaan Modul Mari Membaca';$('exerciseDetails').required=v==='Latihan';$('otherActivity').required=v==='Lain-lain';}
+$('activity').addEventListener('change',updateActivityFields);
+$('documentation').addEventListener('change',()=>{const file=$('documentation').files[0];const preview=$('photoPreview');if(!file){preview.textContent='Pilih gambar jika ada (JPG, PNG atau gambar telefon).';return;}if(!file.type.startsWith('image/')){preview.textContent='Sila pilih fail gambar.';return;}const reader=new FileReader();reader.onload=()=>{preview.innerHTML=`<img src="${reader.result}" alt="Pratonton gambar dokumentasi"><span>${escapeHTML(file.name)}</span>`;};reader.readAsDataURL(file);});
+function renderHistory(){let list=[...records].sort((a,b)=>b.date.localeCompare(a.date));let p=$('filterPupil').value,mentor=$('filterMentor').value.trim().toLowerCase(),from=$('filterFrom').value,to=$('filterTo').value;list=list.filter(r=>(!p||String(r.pupil_id)===p)&&(!mentor||r.mentor.toLowerCase().includes(mentor))&&(!from||r.date>=from)&&(!to||r.date<=to));$('historyTable').innerHTML=tableHTML(list);}
+function clearFilters(){$('filterPupil').value='';$('filterMentor').value='';$('filterFrom').value='';$('filterTo').value='';renderHistory();}
+async function addPupil(){let n=$('newPupil').value.trim();if(!n)return showToast('Masukkan nama murid dahulu.');if(!supabaseClient||!currentUser)return showToast('Sila log masuk dahulu.');if(pupils.some(p=>p.name.toLowerCase()===n.toLowerCase()))return showToast('Nama murid sudah ada.');const {error}=await supabaseClient.from('pupils').insert({name:n});if(error)return showToast('Gagal tambah murid: '+error.message);$('newPupil').value='';await refreshData();renderPupils();renderDashboard();showToast('Murid berjaya ditambah.');}
+function renderPupils(){$('pupilsTable').innerHTML=`<div class="table-scroll"><table><thead><tr><th>#</th><th>Nama murid</th><th>Jumlah rekod</th></tr></thead><tbody>${pupils.map((p,i)=>`<tr><td>${String(i+1).padStart(2,'0')}</td><td><strong>${escapeHTML(p.name)}</strong></td><td>${countFor(p)}</td></tr>`).join('')}</tbody></table></div>`;}
+function renderReport(){if(!pupils.length){$('reportOutput').innerHTML='<div class="card empty">Tiada murid.</div>';return;}let pId=$('reportPupil').value||String(pupils[0].id),p=(pupils.find(x=>String(x.id)===String(pId))||pupils[0]).name,year=$('reportYear').value||'2026',list=records.filter(r=>String(r.pupil_id)===String(pId)&&r.date.startsWith(year)).sort((a,b)=>a.date.localeCompare(b.date));let mastered=new Set(list.filter(r=>r.after==='Menguasai').map(r=>r.construct));let constructRows=constructs.map(([id,n])=>{let latest=[...list].reverse().find(r=>r.construct===id);return `<tr><td>${id}</td><td>${escapeHTML(n)}</td><td>${latest?escapeHTML(latest.after):'Belum direkodkan'}</td><td>${latest?dateText(latest.date):'—'}</td></tr>`}).join('');$('reportOutput').innerHTML=`<div class="report-header"><h1>Laporan Kemajuan PIBA</h1><p>Rekod bimbingan membaca murid</p></div><div class="stats"><div class="card"><div class="stat-top">Nama murid</div><div style="font-size:18px;font-weight:750;margin-top:10px">${escapeHTML(p)}</div></div><div class="card"><div class="stat-top">Jumlah sesi</div><div class="stat-num">${list.length}</div></div><div class="card"><div class="stat-top">Konstruk direkodkan</div><div class="stat-num">${new Set(list.map(r=>r.construct)).size}/12</div></div><div class="card"><div class="stat-top">Konstruk pernah menguasai</div><div class="stat-num">${mastered.size}</div></div></div><div class="card table-card"><div class="table-top"><div><h2>Status konstruk ${year}</h2><p class="subtitle" style="margin-top:5px">Paparan berdasarkan rekod terkini setiap konstruk dalam tahun dipilih.</p></div></div><div class="table-scroll"><table><thead><tr><th>Kod</th><th>Kemahiran (label kerja)</th><th>Status terkini</th><th>Tarikh rekod</th></tr></thead><tbody>${constructRows}</tbody></table></div></div><div class="card" style="margin-top:16px"><h2>Butiran sesi bimbingan</h2><div style="height:10px"></div>${tableHTML(list)}</div><p class="subtitle" style="margin-top:12px">Disediakan daripada data prototaip PIBA Tracker. Semak ketepatan konstruk dan indikator berdasarkan modul rasmi sebelum digunakan untuk pelaporan rasmi.</p>`;}
+
+function setAuthMessage(msg){$('authMessage').textContent=msg||'';}
+function getStoredConfig(){try{return JSON.parse(localStorage.getItem('pibaSupabaseConfig')||'null')}catch{return null}}
+function showLogin(){ $('authWrap').classList.remove('hidden'); $('configFields').classList.add('hidden'); $('loginFields').classList.remove('hidden'); $('authIntro').textContent='Log masuk menggunakan akaun mentor yang ditambah dalam Supabase Authentication.'; }
+function showConfig(){ $('authWrap').classList.remove('hidden'); $('configFields').classList.remove('hidden'); $('loginFields').classList.add('hidden'); $('authIntro').textContent='Masukkan Project URL dan publishable key Supabase kamu.'; }
+async function refreshData(){
+ if(!supabaseClient||!currentUser)return;
+ const [{data:pData,error:pErr},{data:rData,error:rErr}]=await Promise.all([
+  supabaseClient.from('pupils').select('id,name').order('name'),
+  supabaseClient.from('reading_records').select('id,session_date,mentor_name,mentor_id,pupil_id,construct_code,before_status,after_status,activity,module_page,exercise_details,other_activity,photo_path,notes,follow_up,created_at').order('session_date',{ascending:false})
+ ]);
+ if(pErr)throw pErr;if(rErr)throw rErr;
+ pupils=pData||[];
+ records=await Promise.all((rData||[]).map(async r=>{
+  let photo='';if(r.photo_path){const {data,error}=await supabaseClient.storage.from('piba-dokumentasi').createSignedUrl(r.photo_path,3600);if(!error&&data)photo=data.signedUrl;}
+  const pupil=pupils.find(p=>Number(p.id)===Number(r.pupil_id));
+  return {id:r.id,date:r.session_date,mentor:r.mentor_name,pupil_id:r.pupil_id,pupil_name:pupil?.name||'Murid tidak ditemui',construct:r.construct_code,before:r.before_status,after:r.after_status,activity:r.activity,modulePage:r.module_page,exerciseDetails:r.exercise_details,otherActivity:r.other_activity,documentation:photo,photo_path:r.photo_path,notes:r.notes,followup:r.follow_up};
+ }));
+ populateSelects();renderDashboard();if(activeView==='history')renderHistory();if(activeView==='pupils')renderPupils();if(activeView==='report')renderReport();
+}
+async function connectSupabase(){
+ const url=$('supabaseUrl').value.trim(),key=$('supabaseKey').value.trim();
+ if(!url||!key){setAuthMessage('Masukkan kedua-dua maklumat dahulu.');return;}
+ if(!/^https:\/\//.test(url)||!key.startsWith('sb_publishable_')){setAuthMessage('Semak Project URL dan pastikan key bermula dengan sb_publishable_.');return;}
+ try{localStorage.setItem('pibaSupabaseConfig',JSON.stringify({url,key}));supabaseClient=window.supabase.createClient(url,key);const {data,error}=await supabaseClient.auth.getSession();if(error)throw error;if(data.session){currentUser=data.session.user;await afterLogin();}else showLogin();setAuthMessage('');}
+ catch(err){setAuthMessage('Tidak dapat sambung: '+err.message);}
+}
+async function afterLogin(){
+ $('authWrap').classList.add('hidden');$('connectionStatus').textContent='Disambungkan';$('mentor').value=currentUser.email||'';
+ try{await refreshData();}catch(err){$('authWrap').classList.remove('hidden');showLogin();setAuthMessage('Gagal membaca data Supabase: '+err.message);}
+}
+$('connectBtn').addEventListener('click',connectSupabase);
+$('loginBtn').addEventListener('click',async()=>{const email=$('loginEmail').value.trim(),password=$('loginPassword').value;if(!email||!password){setAuthMessage('Masukkan e-mel dan kata laluan.');return;}try{const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;await afterLogin();}catch(err){setAuthMessage('Log masuk gagal: '+err.message);}});
+$('changeConfigBtn').addEventListener('click',()=>{localStorage.removeItem('pibaSupabaseConfig');supabaseClient=null;showConfig();});
+$('logoutBtn').addEventListener('click',async()=>{if(supabaseClient)await supabaseClient.auth.signOut();currentUser=null;pupils=[];records=[];$('connectionStatus').textContent='Belum log masuk';showLogin();});
+$('reportPupil').addEventListener('change',renderReport);
+(async function initAuth(){const config=getStoredConfig();if(config){$('supabaseUrl').value=config.url;$('supabaseKey').value=config.key;supabaseClient=window.supabase.createClient(config.url,config.key);const {data,error}=await supabaseClient.auth.getSession();if(!error&&data.session){currentUser=data.session.user;await afterLogin();return;}showLogin();}else showConfig();})();
+$('date').value=new Date().toISOString().slice(0,10);populateSelects();renderDashboard();
+</script>
+</body>
+</html>
